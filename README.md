@@ -1,5 +1,5 @@
 # comfyUI_LLM
-LLM 是在comfyUI中集成大语言模型
+comfyUI_LLM 是在comfyUI中集成大语言模型
 
 ## 继承deepseek(本地模型)
 示例：
