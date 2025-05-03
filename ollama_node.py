@@ -41,6 +41,8 @@ class ComfyUI_LLM_Ollama:
     - 动态模型列表加载
     - 详细的日志记录
     """
+    # 在类定义顶部添加
+    WEB_DIRECTORY = "./js"
     
     # 类级共享状态
     _conn_lock = Lock()
@@ -64,7 +66,8 @@ class ComfyUI_LLM_Ollama:
                 "prompt": ("STRING", {
                     "multiline": True,
                     "default": "请用简洁的语言回答...",
-                    "dynamicPrompts": False
+                    "dynamicPrompts": False,
+                    "lineCount": 4  # ✅ 初始显示4行高度
                 }),
                 "model": (cls._available_models, {"default": "deepseek-r1:7b"}),
                 "temperature": ("FLOAT", {
@@ -88,7 +91,8 @@ class ComfyUI_LLM_Ollama:
                 "system_message": ("STRING", {
                     "multiline": True,
                     "default": "你是有帮助的AI助手",
-                    "lazy": True
+                    "lazy": True,
+                    "lineCount": 3  # ✅ 初始显示3行高度
                 }),
                 "stop_sequences": ("STRING", {
                     "default": "",

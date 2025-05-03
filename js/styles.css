@@ -1,0 +1,14 @@
+/* 自定义文本域样式 */
+.comfy-ollama-textarea {
+    background: #f8f8f8;
+    border-radius: 4px;
+    padding: 8px;
+    font-family: monospace;
+    border: 1px solid #ccc;
+    transition: all 0.3s ease;
+}
+
+.comfy-ollama-textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
