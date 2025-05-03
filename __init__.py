@@ -1,9 +1,3 @@
-from .ollama_node import ComfyUI_LLM_Ollama
+from .ollama_node import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 
-NODE_CLASS_MAPPINGS = {
-    "ComfyUI_LLM_Ollama": ComfyUI_LLM_Ollama
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "ComfyUI_LLM_Ollama": "🤖 Ollama LLM"
-}
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
