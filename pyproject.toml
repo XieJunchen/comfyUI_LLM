@@ -1,0 +1,14 @@
+[project]
+name = "llm"
+description = "comfyUI_LLM is the integration of a large language model into ComfyUI"
+version = "1.0.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/XieJunchen/comfyUI_LLM"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "comfyUI_LLM"
+Icon = ""
