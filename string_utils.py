@@ -1,7 +1,25 @@
+import os
 import json
+import logging
 import traceback
 from typing import Optional
 from typing import Union
+
+# ----------------------------
+# 日志系统配置
+# ----------------------------
+desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+log_path = os.path.join(desktop_path, "ollama_comfyui.log")
+
+# 日志初始化
+logging.basicConfig(
+    filename=log_path,
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    filemode='w'
+)
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())  # 控制台输出
 
 class StringArrayFormatter:
     """
@@ -14,6 +32,9 @@ class StringArrayFormatter:
     - 支持自定义分隔符
     - 错误友好提示
     """
+
+    # 类级日志器 ✅ 修正点1
+    logger = logging.getLogger("ComfyUI-Ollama")
     
     @classmethod
     def INPUT_TYPES(cls):
@@ -28,7 +49,7 @@ class StringArrayFormatter:
                 "max_length": ("INT", {
                     "default": 200,
                     "min": 0,
-                    "max": 1000,
+                    "max": 65535,
                     "step": 50,
                     "display": "slider"
                 }),
@@ -40,7 +61,7 @@ class StringArrayFormatter:
 
     # 更新 RETURN_TYPES 和 RETURN_NAMES
     RETURN_TYPES = ( "INT", "LIST_STR")
-    RETURN_NAMES = ("长度", "原始数组")
+    RETURN_NAMES = ("长度", "字符串数组")
     FUNCTION = "format_array"
     CATEGORY = "LLM/文本处理"
     OUTPUT_NODE = True
@@ -57,7 +78,7 @@ class StringArrayFormatter:
         except json.JSONDecodeError:
             return None
         except Exception as e:
-            print(f"❌ 输入验证失败: {str(e)}")
+            logger.error(f"❌ 输入验证失败: {str(e)}")
             return None
 
     def _format_item(self, index: int, text: str, delimiter: str, max_len: int) -> str:
@@ -79,11 +100,13 @@ class StringArrayFormatter:
         try:
             data = json.loads(input_str)
             if not isinstance(data, list):
-                return ("⚠️ 输入必须是数组", 0, [])
+                logger.error(f"⚠️ 输入必须是数组: {input_str}")
+                return (0, [])
             # 强制所有元素转为字符串
             str_array = [str(item) for item in data]
         except Exception as e:
-            return (f"⚠️ 解析失败: {str(e)}", 0, [])
+            logger.error(f"⚠️ 解析失败: {str(e)}")
+            return (0, [])
 
         # 返回原始数组和长度（新增第三个返回值）
         return (
