@@ -18,12 +18,11 @@ def load_qiniu_config():
 QINIU_CONFIG = load_qiniu_config() 
 
 class QiniuUploader:
-    def __init__(self, access_key: str, secret_key: str, bucket_name: str, domain: str, output_dir: str = "comfyui",):
+    def __init__(self, access_key: str, secret_key: str, bucket_name: str, domain: str,):
         self.access_key = access_key
         self.secret_key = secret_key
         self.bucket_name = bucket_name
         self.domain = domain
-        self.output_dir = output_dir
         self.q = Auth(self.access_key, self.secret_key)
 
     def upload_binary(self, data: bytes, key: str = None) -> str:
@@ -43,7 +42,7 @@ class QiniuUploader:
         elif hasattr(info, 'key') and info.key:
             real_key = info.key
         if real_key:
-            url = f"{self.domain}/{self.output_dir}/{real_key}"
+            url = f"{self.domain}/output/{real_key}"
             if not url.startswith("http://") and not url.startswith("https://"):
                 url = "http://" + url.lstrip("/")
             return url
@@ -84,9 +83,9 @@ class QiniuImageUploadNode:
     CATEGORY = "云服务/七牛云"
     OUTPUT_NODE = True
 
-    def upload_images(self, access_key, secret_key, bucket_name, domain, output_dir, images, key_prefix, format):
+    def upload_images(self, access_key, secret_key, bucket_name, domain, images, key_prefix, format):
         # 优先用传参，否则用全局缓存
-        uploader = QiniuUploader(access_key, secret_key, bucket_name, domain, output_dir)
+        uploader = QiniuUploader(access_key, secret_key, bucket_name, domain)
         urls = []
         arr = images.cpu().numpy() if hasattr(images, 'cpu') else images
         for idx, image in enumerate(arr):
