@@ -43,7 +43,7 @@ class QiniuUploader:
         elif hasattr(info, 'key') and info.key:
             real_key = info.key
         if real_key:
-            url = f"{self.domain}/output/{real_key}"
+            url = f"{self.domain}/{real_key}"
             if not url.startswith("http://") and not url.startswith("https://"):
                 url = "http://" + url.lstrip("/")
             return url
@@ -93,7 +93,7 @@ class QiniuImageUploadNode:
             img.save(buf, format=format)
             buf.seek(0)
             random_name = uuid.uuid4().hex
-            key = f"{key_prefix}{random_name}.{format.lower()}"
+            key = f"output/{key_prefix}{random_name}.{format.lower()}"
             url = uploader.upload_binary(buf.getvalue(), key)
             print(f"上传图片返回 url: {url}, 类型: {type(url)}")
             urls.append(str(url))
