@@ -71,6 +71,7 @@ class QiniuImageUploadNode:
                 "bucket_name": ("STRING", {"default": config["bucket_name"]}),
                 "domain": ("STRING", {"default": config["domain"]}),
                 "images": ("IMAGE", ),
+                "folder": ("STRING", {"default": "output"}),
                 "key_prefix": ("STRING", {"default": "comfyui_"}),
                 "format": (["PNG", "JPEG"], {"default": "PNG"}),
             }
@@ -82,8 +83,7 @@ class QiniuImageUploadNode:
     CATEGORY = "云服务/七牛云"
     OUTPUT_NODE = True
 
-    def upload_images(self, access_key, secret_key, bucket_name, domain, images, key_prefix, format):
-        # 优先用传参，否则用全局缓存
+    def upload_images(self, access_key, secret_key, bucket_name, domain, images, folder, key_prefix, format):
         uploader = QiniuUploader(access_key, secret_key, bucket_name, domain)
         urls = []
         arr = images.cpu().numpy() if hasattr(images, 'cpu') else images
@@ -93,7 +93,9 @@ class QiniuImageUploadNode:
             img.save(buf, format=format)
             buf.seek(0)
             random_name = uuid.uuid4().hex
-            key = f"output/{key_prefix}{random_name}.{format.lower()}"
+            # 拼接文件夹路径
+            folder_path = folder.strip().strip('/')
+            key = f"{folder_path}/{key_prefix}{random_name}.{format.lower()}"
             url = uploader.upload_binary(buf.getvalue(), key)
             print(f"上传图片返回 url: {url}, 类型: {type(url)}")
             urls.append(str(url))
