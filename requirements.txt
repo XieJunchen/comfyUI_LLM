@@ -1,0 +1,4 @@
+qiniu
+pillow
+numpy
+openai
