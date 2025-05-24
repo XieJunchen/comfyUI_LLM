@@ -6,6 +6,7 @@ import numpy as np
 import uuid
 import json
 
+
 QINIU_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "qiniu_config.json")
 
 def load_qiniu_config():
@@ -60,8 +61,7 @@ class QiniuImageUploadNode:
             "access_key": "",
             "secret_key": "",
             "bucket_name": "",
-            "domain": "",
-            "output_dir": "comfyui"
+            "domain": ""
         }
 
         return {
@@ -70,7 +70,6 @@ class QiniuImageUploadNode:
                 "secret_key": ("STRING", {"default": config["secret_key"]}),
                 "bucket_name": ("STRING", {"default": config["bucket_name"]}),
                 "domain": ("STRING", {"default": config["domain"]}),
-                "output_dir": ("STRING", {"default": config["domain"]}),
                 "images": ("IMAGE", ),
                 "key_prefix": ("STRING", {"default": "comfyui_"}),
                 "format": (["PNG", "JPEG"], {"default": "PNG"}),
