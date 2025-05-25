@@ -73,7 +73,7 @@ class QiniuImageUploadNode:
                 "images": ("IMAGE", ),
                 "folder": ("STRING", {"default": "output"}),
                 "key_prefix": ("STRING", {"default": "comfyui_"}),
-                "format": (["PNG", "JPEG"], {"default": "PNG"}),
+                "format": (["PNG", "JPEG", "GIF"], {"default": "PNG"}),
             }
         }
 
@@ -90,7 +90,11 @@ class QiniuImageUploadNode:
         for idx, image in enumerate(arr):
             img = Image.fromarray(np.clip(255. * image, 0, 255).astype(np.uint8))
             buf = io.BytesIO()
-            img.save(buf, format=format)
+            if format == "GIF":
+                img = img.convert("P", palette=Image.ADAPTIVE)
+                img.save(buf, format="GIF")
+            else:
+                img.save(buf, format=format)
             buf.seek(0)
             random_name = uuid.uuid4().hex
             # 拼接文件夹路径
@@ -101,9 +105,56 @@ class QiniuImageUploadNode:
             urls.append(str(url))
         return (urls,)
 
+class QiniuVideoUploadNode:
+    """
+    ComfyUI 视频文件上传七牛云节点
+    """
+    @classmethod
+    def INPUT_TYPES(cls):
+        config = load_qiniu_config() or {
+            "access_key": "",
+            "secret_key": "",
+            "bucket_name": "",
+            "domain": ""
+        }
+        return {
+            "required": {
+                "access_key": ("STRING", {"default": config["access_key"]}),
+                "secret_key": ("STRING", {"default": config["secret_key"]}),
+                "bucket_name": ("STRING", {"default": config["bucket_name"]}),
+                "domain": ("STRING", {"default": config["domain"]}),
+                "video_path": ("STRING", {"default": ""}),
+                "folder": ("STRING", {"default": "video"}),
+                "key_prefix": ("STRING", {"default": "comfyui_"}),
+                "ext": (["mp4", "mov", "avi", "mkv"], {"default": "mp4"}),
+            }
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("url",)
+    FUNCTION = "upload_video"
+    CATEGORY = "云服务/七牛云"
+    OUTPUT_NODE = True
+
+    def upload_video(self, access_key, secret_key, bucket_name, domain, video_path, folder, key_prefix, ext):
+        uploader = QiniuUploader(access_key, secret_key, bucket_name, domain)
+        if not os.path.isfile(video_path):
+            raise FileNotFoundError(f"视频文件不存在: {video_path}")
+        with open(video_path, "rb") as f:
+            data = f.read()
+        random_name = uuid.uuid4().hex
+        folder_path = folder.strip().strip('/')
+        key = f"{folder_path}/{key_prefix}{random_name}.{ext}"
+        url = uploader.upload_binary(data, key)
+        print(f"上传视频返回 url: {url}, 类型: {type(url)}")
+        return (url,)
+
+# 注册到节点映射
 NODE_CLASS_MAPPINGS = {
-    "QiniuImageUploadNode": QiniuImageUploadNode
+    "QiniuImageUploadNode": QiniuImageUploadNode,
+    "QiniuVideoUploadNode": QiniuVideoUploadNode
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-"QiniuImageUploadNode": "☁️ 七牛云图片上传 (IMAGE)"
+"QiniuImageUploadNode": "☁️ 七牛云图片上传 (IMAGE)",
+"QiniuVideoUploadNode": "☁️ 七牛云视频上传 (VIDEO)"
 }
