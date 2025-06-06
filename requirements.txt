@@ -2,3 +2,5 @@ qiniu
 pillow
 numpy
 openai
+requests
+torch

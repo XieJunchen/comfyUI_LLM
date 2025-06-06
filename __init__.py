@@ -1,22 +1,27 @@
 # 从各节点文件导入映射
-from .ollama_node import (
+from .node.ollama_node import (
     NODE_CLASS_MAPPINGS as OLLAMA_NODE_MAPPINGS,
     NODE_DISPLAY_NAME_MAPPINGS as OLLAMA_DISPLAY_NAMES
 )
 
-from .online_api import (
+from .node.online_api import (
     NODE_CLASS_MAPPINGS as LLM_ONLINE_API,
     NODE_DISPLAY_NAME_MAPPINGS as LLM_ONLINE_API_DISPLAY_NAMES
 )
 
-from .string_utils import (
+from .node.string_utils import (
     NODE_CLASS_MAPPINGS as STRING_UTILS_MAPPINGS,
     NODE_DISPLAY_NAME_MAPPINGS as STRING_UTILS_DISPLAY_NAMES
 )
 
-from .qiniu_uploader import (
+from .node.qiniu_uploader import (
     NODE_CLASS_MAPPINGS as QINIU_MAPPINGS,
     NODE_DISPLAY_NAME_MAPPINGS as QINIU_DISPLAY_NAMES
+)
+
+from .node.img_utils import (
+    NODE_CLASS_MAPPINGS as IMG_UTIL_MAPPINGS,
+    NODE_DISPLAY_NAME_MAPPINGS as IMG_UTIL_DISPLAY_NAMES
 )
 
 # 合并所有映射
@@ -24,14 +29,16 @@ NODE_CLASS_MAPPINGS = {
     **OLLAMA_NODE_MAPPINGS,
     **LLM_ONLINE_API,
     **STRING_UTILS_MAPPINGS,
-    **QINIU_MAPPINGS
+    **QINIU_MAPPINGS,
+    **IMG_UTIL_MAPPINGS
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     **OLLAMA_DISPLAY_NAMES,
     **LLM_ONLINE_API_DISPLAY_NAMES,
     **STRING_UTILS_DISPLAY_NAMES,
-    **QINIU_DISPLAY_NAMES
+    **QINIU_DISPLAY_NAMES,
+    **IMG_UTIL_DISPLAY_NAMES
 }
 
 # 定义公开接口
