@@ -10,7 +10,7 @@ import subprocess
 import imageio_ffmpeg
 
 
-class LoadImageFromUrl:
+class LoadImgFromUrl:
     """Load an image from the given URL"""
 
     @classmethod
@@ -156,13 +156,13 @@ class ImagesToVideoAndUpload:
         return (url,)
 
 NODE_CLASS_MAPPINGS = {
-    "LoadImageFromUrl": LoadImageFromUrl,
+    "LoadImgFromUrl": LoadImgFromUrl,
     "LoadGifFromLocal": LoadGifFromLocal,
     "ImagesToVideoAndUpload": ImagesToVideoAndUpload
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LoadImageFromUrl": "☁️ 加载图片",
+    "LoadImgFromUrl": "☁️ 加载图片",
     "LoadGifFromLocal": "📂 加载本地GIF",
     "ImagesToVideoAndUpload": "🖼️图片合成视频并上传七牛云"
 }
