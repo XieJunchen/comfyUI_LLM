@@ -1,5 +1,6 @@
-qiniu
 pillow
 numpy
-openai
 requests
+qiniu
+openai
+imageio-ffmpeg
