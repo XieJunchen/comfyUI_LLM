@@ -1,45 +1,20 @@
-# 从各节点文件导入映射
-from .node.ollama_node import (
-    NODE_CLASS_MAPPINGS as OLLAMA_NODE_MAPPINGS,
-    NODE_DISPLAY_NAME_MAPPINGS as OLLAMA_DISPLAY_NAMES
-)
+import importlib
+import os
+import pkgutil
 
-from .node.online_api import (
-    NODE_CLASS_MAPPINGS as LLM_ONLINE_API,
-    NODE_DISPLAY_NAME_MAPPINGS as LLM_ONLINE_API_DISPLAY_NAMES
-)
+# 动态加载 node 目录下所有节点模块
+NODE_CLASS_MAPPINGS = {}
+NODE_DISPLAY_NAME_MAPPINGS = {}
 
-from .node.string_utils import (
-    NODE_CLASS_MAPPINGS as STRING_UTILS_MAPPINGS,
-    NODE_DISPLAY_NAME_MAPPINGS as STRING_UTILS_DISPLAY_NAMES
-)
+package = __name__
+node_pkg = f"{package}.node"
 
-from .node.qiniu_uploader import (
-    NODE_CLASS_MAPPINGS as QINIU_MAPPINGS,
-    NODE_DISPLAY_NAME_MAPPINGS as QINIU_DISPLAY_NAMES
-)
+for _, modname, ispkg in pkgutil.iter_modules([os.path.join(os.path.dirname(__file__), 'node')]):
+    if not ispkg:
+        module = importlib.import_module(f"{node_pkg}.{modname}")
+        if hasattr(module, "NODE_CLASS_MAPPINGS"):
+            NODE_CLASS_MAPPINGS.update(getattr(module, "NODE_CLASS_MAPPINGS"))
+        if hasattr(module, "NODE_DISPLAY_NAME_MAPPINGS"):
+            NODE_DISPLAY_NAME_MAPPINGS.update(getattr(module, "NODE_DISPLAY_NAME_MAPPINGS"))
 
-from .node.img_utils import (
-    NODE_CLASS_MAPPINGS as IMG_UTIL_MAPPINGS,
-    NODE_DISPLAY_NAME_MAPPINGS as IMG_UTIL_DISPLAY_NAMES
-)
-
-# 合并所有映射
-NODE_CLASS_MAPPINGS = {
-    **OLLAMA_NODE_MAPPINGS,
-    **LLM_ONLINE_API,
-    **STRING_UTILS_MAPPINGS,
-    **QINIU_MAPPINGS,
-    **IMG_UTIL_MAPPINGS
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    **OLLAMA_DISPLAY_NAMES,
-    **LLM_ONLINE_API_DISPLAY_NAMES,
-    **STRING_UTILS_DISPLAY_NAMES,
-    **QINIU_DISPLAY_NAMES,
-    **IMG_UTIL_DISPLAY_NAMES
-}
-
-# 定义公开接口
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
