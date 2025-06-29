@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+*.pdb
+*.egg-info/
+*.egg
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VSCode
+.vscode/
+
+# 环境/依赖
+.env
+.venv
+venv/
+ENV/
+
+# 临时文件
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
+
+# 数据/输出
+output/
+*.ckpt
+*.pth
+*.h5
+*.pt
+*.onnx
+*.npz
+*.npy
+*.wav
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+*.gif
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.tiff
+*.tif
+
+# 云配置
+cloud_config.json
+
+# 其他
+*.sqlite3
+*.db
+*.lock

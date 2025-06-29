@@ -189,6 +189,7 @@ class CloudImagesToVideoAndUpload:
                 "folder": ("STRING", {"default": "video"}),
                 "key_prefix": ("STRING", {"default": "comfyui_"}),
                 "ext": (["mp4", "mov", "avi", "mkv"], {"default": "mp4"}),
+                "audio": ("AUDIO", {"default": None}),  # 改为AUDIO类型
             }
         }
 
@@ -198,7 +199,8 @@ class CloudImagesToVideoAndUpload:
     CATEGORY = "云服务"
     OUTPUT_NODE = True
 
-    def images_to_video_and_upload(self, images, fps, cloud_type, access_key, secret_key, bucket_name, domain, folder, key_prefix, ext):
+    def images_to_video_and_upload(self, images, fps, cloud_type, access_key, secret_key, bucket_name, domain, folder, key_prefix, ext, audio=None):
+        import torchaudio
         config = load_cloud_config()[1]
         access_key = access_key or config.get("access_key", "")
         secret_key = secret_key or config.get("secret_key", "")
@@ -212,6 +214,8 @@ class CloudImagesToVideoAndUpload:
         pix_fmt = 'rgb24'
         with tempfile.NamedTemporaryFile(suffix=f'.{ext}', delete=False) as tmpfile:
             tmp_path = tmpfile.name
+        # 先生成无音频视频，临时文件名用 _noaudio 结尾但扩展名标准
+        tmp_video_path = tmp_path.replace(f'.{ext}', f'_noaudio.{ext}')
         cmd = [
             imageio_ffmpeg.get_ffmpeg_exe(),
             '-y',
@@ -224,19 +228,45 @@ class CloudImagesToVideoAndUpload:
             '-an',
             '-vcodec', 'libx264',
             '-pix_fmt', 'yuv420p',
-            tmp_path
+            tmp_video_path
         ]
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
         for im in img_list:
             proc.stdin.write(im.convert('RGB').tobytes())
         proc.stdin.close()
         proc.wait()
+        # 如果有AUDIO，保存为wav临时文件再合成
+        if audio is not None and isinstance(audio, dict) and "waveform" in audio and "sample_rate" in audio:
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp_audio:
+                audio_path = tmp_audio.name
+            waveform = audio["waveform"]
+            sample_rate = audio["sample_rate"]
+            # waveform shape: (1, channels, samples) or (channels, samples)
+            if waveform.dim() == 3:
+                waveform = waveform.squeeze(0)
+            torchaudio.save(audio_path, waveform, sample_rate)
+            # 合成音视频到tmp_path
+            merge_cmd = [
+                imageio_ffmpeg.get_ffmpeg_exe(),
+                '-y',
+                '-i', tmp_video_path,
+                '-i', audio_path,
+                '-c:v', 'copy',
+                '-c:a', 'aac',
+                '-shortest',
+                tmp_path
+            ]
+            subprocess.run(merge_cmd, check=True)
+            os.remove(tmp_video_path)
+            os.remove(audio_path)
+        else:
+            # 无音频直接重命名
+            os.rename(tmp_video_path, tmp_path)
         # 3. 上传到云存储
         if cloud_type == "qiniu":
             uploader = QiniuUploader(access_key, secret_key, bucket_name, domain)
         elif cloud_type == "jdcloud":
             # uploader = JDCloudUploader(access_key, secret_key, bucket_name, domain)
-        # else:
             raise NotImplementedError(f"暂不支持的云类型: {cloud_type}")
         random_name = uuid.uuid4().hex
         folder_path = folder.strip().strip('/')
