@@ -29,10 +29,22 @@ class SplitVideoByFrames:
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp_audio:
             audio_path = tmp_audio.name
         ffmpeg_bin = "ffmpeg"  # 假设已在环境变量
-        cmd = [ffmpeg_bin, '-y', '-i', video_path, '-vn', '-acodec', 'pcm_s16le', '-ar', '44100', '-ac', '2', audio_path]
-        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # 2. 读取音频为tensor
-        waveform, sample_rate = torchaudio.load(audio_path)
+        cmd = [ffmpeg_bin, '-y', '-i', video_path, '-vn', '-acodec', 'pcm_s16le', '-ar', '44100', '-ac', '2', '-f', 'wav', audio_path]
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # 检查音频文件是否有效
+        if not os.path.exists(audio_path) or os.path.getsize(audio_path) == 0:
+            print(f"警告：视频 {video_path} 无音轨或音频提取失败，返回空音频。")
+            waveform = torch.zeros((1, 2, 1), dtype=torch.float32)  # 1帧2通道空音频
+            sample_rate = 44100
+            audio_dict = {"waveform": waveform, "sample_rate": sample_rate}
+        else:
+            try:
+                waveform, sample_rate = torchaudio.load(audio_path)
+            except Exception as e:
+                print(f"警告：音频文件读取失败，返回空音频。错误信息: {e}")
+                waveform = torch.zeros((1, 2, 1), dtype=torch.float32)
+                sample_rate = 44100
+            audio_dict = {"waveform": waveform, "sample_rate": sample_rate}
         os.remove(audio_path)
         # 保证shape为(1,channels,samples)
         if waveform.dim() == 2:
