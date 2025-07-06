@@ -200,7 +200,6 @@ class CloudImagesToVideoAndUpload:
     OUTPUT_NODE = True
 
     def images_to_video_and_upload(self, images, fps, cloud_type, access_key, secret_key, bucket_name, domain, folder, key_prefix, ext, audio=None):
-        import torchaudio
         config = load_cloud_config()[1]
         access_key = access_key or config.get("access_key", "")
         secret_key = secret_key or config.get("secret_key", "")
@@ -236,7 +235,16 @@ class CloudImagesToVideoAndUpload:
         proc.stdin.close()
         proc.wait()
         # 如果有AUDIO，保存为wav临时文件再合成
-        if audio is not None and isinstance(audio, dict) and "waveform" in audio and "sample_rate" in audio:
+        def is_valid_audio(audio):
+            if not (audio and isinstance(audio, dict) and "waveform" in audio and "sample_rate" in audio):
+                return False
+            waveform = audio["waveform"]
+            if not hasattr(waveform, 'numel') or waveform.numel() == 0:
+                return False
+            if waveform.abs().sum().item() == 0:
+                return False
+            return True
+        if is_valid_audio(audio):
             with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp_audio:
                 audio_path = tmp_audio.name
             waveform = audio["waveform"]
@@ -244,6 +252,7 @@ class CloudImagesToVideoAndUpload:
             # waveform shape: (1, channels, samples) or (channels, samples)
             if waveform.dim() == 3:
                 waveform = waveform.squeeze(0)
+            import torchaudio
             torchaudio.save(audio_path, waveform, sample_rate)
             # 合成音视频到tmp_path
             merge_cmd = [
