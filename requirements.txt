@@ -4,3 +4,5 @@ requests
 qiniu
 openai
 imageio-ffmpeg
+torch
+torchaudio

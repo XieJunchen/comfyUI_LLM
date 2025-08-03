@@ -1,7 +1,7 @@
 import cv2
 import torch
 import numpy as np
-import torchaudio
+ 
 import tempfile
 import subprocess
 import os
@@ -39,6 +39,7 @@ class SplitVideoByFrames:
             audio_dict = {"waveform": waveform, "sample_rate": sample_rate}
         else:
             try:
+                import torchaudio
                 waveform, sample_rate = torchaudio.load(audio_path)
             except Exception as e:
                 print(f"警告：音频文件读取失败，返回空音频。错误信息: {e}")
